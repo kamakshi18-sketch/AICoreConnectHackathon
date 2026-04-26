@@ -17,3 +17,5 @@ If you are developing a production application, we recommend using TypeScript wi
 
 Video part 1- https://drive.google.com/file/d/1MVFytCe7KkX4TJ-zZh075QhoLCZbpBE4/view?usp=sharing
 Video part 2- https://drive.google.com/file/d/1_1pO2wTPlpvLcxe65QwTl5dJOihXZ1qt/view?usp=sharing
+
+Website hosted public link- https://campusconnect-g7b4.onrender.com
