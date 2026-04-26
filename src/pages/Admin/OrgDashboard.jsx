@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { Users, Activity, CheckSquare, Link as LinkIcon, Download, Plus, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useAppContext } from '../../context/AppContext';
@@ -13,15 +15,29 @@ export const OrgDashboard = () => {
   const [newTaskDeadline, setNewTaskDeadline] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
 
-  const handleExportReport = () => {
-    const csvContent = "data:text/csv;charset=utf-8,Metric,Value\nTotal Ambassadors,1248\nActive This Week,842\nTasks Completed,4592\nTotal Referrals,8420\n";
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "campusconnect_report.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const dashboardRef = useRef(null);
+
+  const handleExportReport = async () => {
+    if (!dashboardRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(dashboardRef.current, {
+        backgroundColor: '#0a0a12', // match our dark theme
+        scale: 2, // better resolution
+        useCORS: true
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('CampusConnect_Org_Report.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
   };
 
   const handleAssignTask = (e) => {
@@ -58,7 +74,7 @@ export const OrgDashboard = () => {
   ];
 
   return (
-    <div className="container mt-8 mb-8">
+    <div className="container mt-8 mb-8" ref={dashboardRef}>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="mb-2">Org Dashboard</h1>
