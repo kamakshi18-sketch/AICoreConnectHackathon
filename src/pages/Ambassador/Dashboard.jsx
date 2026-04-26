@@ -68,7 +68,7 @@ export const Dashboard = () => {
         <div className="card">
           <h2 className="mb-4">Weekly XP Progress</h2>
           <div className="flex justify-between text-sm mb-2 text-muted">
-            <span>Level 4</span>
+            <span>Level {Math.floor(points / 1000)}</span>
             <span>{points % 1000} / 1000 XP</span>
           </div>
           <div className="progress-bg mb-4">

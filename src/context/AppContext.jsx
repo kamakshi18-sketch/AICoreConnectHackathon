@@ -30,6 +30,7 @@ const BADGES = [
   { id: 'b8', name: 'Viral', desc: '10K video views', icon: '📈', unlocked: false },
   { id: 'b9', name: '50 Referrals', desc: 'Refer 50 people', icon: '🌟', unlocked: false },
   { id: 'b10', name: 'Legend', desc: 'Reach rank #1', icon: '👑', unlocked: false },
+  { id: 'b11', name: 'Level 4 Pro', desc: 'Reach 4000 XP', icon: '🏆', unlocked: false },
 ];
 
 const INITIAL_FEED = [
@@ -50,6 +51,7 @@ export const AppProvider = ({ children }) => {
   const [badges, setBadges] = useState(BADGES);
   const [feed, setFeed] = useState(INITIAL_FEED);
   const [toasts, setToasts] = useState([]);
+  const [unlockedBadgeModal, setUnlockedBadgeModal] = useState(null);
 
   const addToast = (message, type = 'success') => {
     const id = Date.now();
@@ -109,19 +111,26 @@ export const AppProvider = ({ children }) => {
 
   const checkBadgeUnlocks = (newPoints) => {
     let newBadgesUnlocked = false;
+    let badgeToUnlock = null;
     const updatedBadges = badges.map(b => {
       if (!b.unlocked && b.id === 'b6' && newPoints >= 5000) {
         newBadgesUnlocked = true;
-        return { ...b, unlocked: true };
+        badgeToUnlock = { ...b, unlocked: true };
+        return badgeToUnlock;
+      }
+      if (!b.unlocked && b.id === 'b11' && newPoints >= 4000) {
+        newBadgesUnlocked = true;
+        badgeToUnlock = { ...b, unlocked: true };
+        return badgeToUnlock;
       }
       return b;
     });
 
-    if (newBadgesUnlocked) {
+    if (newBadgesUnlocked && badgeToUnlock) {
       setBadges(updatedBadges);
-      addToast('Diamond Badge Unlocked! 💎', 'success');
+      setUnlockedBadgeModal(badgeToUnlock);
       // Add to feed
-      setFeed(prev => [{ id: Date.now(), user: 'You', action: 'unlocked badge', target: 'Diamond', time: 'just now' }, ...prev].slice(0, 10));
+      setFeed(prev => [{ id: Date.now(), user: 'You', action: 'unlocked badge', target: badgeToUnlock.name, time: 'just now' }, ...prev].slice(0, 10));
     }
   };
 
@@ -251,6 +260,22 @@ export const AppProvider = ({ children }) => {
           </div>
         ))}
       </div>
+
+      {/* Badge Unlock Modal */}
+      {unlockedBadgeModal && (
+        <div className="modal-overlay" onClick={() => setUnlockedBadgeModal(null)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999 }}>
+          <div className="modal-content text-center" onClick={e => e.stopPropagation()} style={{ background: 'var(--card-bg)', padding: '48px 32px', borderRadius: '24px', maxWidth: '420px', width: '90%', animation: 'slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+            <div style={{ fontSize: '6rem', marginBottom: '24px', animation: 'pulse 2s infinite', filter: 'drop-shadow(0 0 20px rgba(255, 209, 102, 0.5))' }}>{unlockedBadgeModal.icon}</div>
+            <h2 className="mb-2" style={{ color: 'var(--accent-gold)', fontSize: '2rem' }}>Congratulations!</h2>
+            <p className="text-muted mb-6">You have successfully earned a new badge</p>
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '24px', borderRadius: '16px', marginBottom: '32px' }}>
+              <h3 className="mb-2" style={{ fontSize: '1.5rem', color: 'var(--text-main)' }}>{unlockedBadgeModal.name}</h3>
+              <p className="text-muted" style={{ fontSize: '1rem' }}>{unlockedBadgeModal.desc}</p>
+            </div>
+            <button className="btn-primary w-full justify-center" style={{ padding: '16px', fontSize: '1.1rem' }} onClick={() => setUnlockedBadgeModal(null)}>Awesome!</button>
+          </div>
+        </div>
+      )}
     </AppContext.Provider>
   );
 };
