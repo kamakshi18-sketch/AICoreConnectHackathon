@@ -40,8 +40,11 @@ export const Navbar = () => {
             </>
           ) : (
             <>
-              <NavLink to="/admin" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`} style={navLinkStyle}>
+              <NavLink to="/admin" end className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`} style={navLinkStyle}>
                 <Building2 size={18} /> Org Dashboard
+              </NavLink>
+              <NavLink to="/admin/approvals" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`} style={navLinkStyle}>
+                <CheckSquare size={18} /> Approvals
               </NavLink>
             </>
           )}

@@ -15,6 +15,7 @@ export const TaskBoard = () => {
 
   const filteredTasks = tasks.filter(t => {
     if (filter === 'Pending' && t.status !== 'pending') return false;
+    if (filter === 'In Review' && t.status !== 'in_review') return false;
     if (filter === 'Done' && t.status !== 'completed') return false;
     if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
@@ -37,7 +38,7 @@ export const TaskBoard = () => {
 
       <div className="flex gap-4 mb-8 items-center justify-between" style={{ flexWrap: 'wrap' }}>
         <div className="flex gap-4">
-          {['All', 'Pending', 'Done'].map(f => (
+          {['All', 'Pending', 'In Review', 'Done'].map(f => (
             <button 
               key={f}
               className={filter === f ? 'btn-primary' : 'btn-secondary'}
@@ -72,6 +73,7 @@ export const TaskBoard = () => {
                     task.type === 'Social' ? 'pill-coral' : 'pill-gold'
                   }`}>{task.type}</span>
                   {task.status === 'completed' && <span className="pill pill-green">Completed</span>}
+                  {task.status === 'in_review' && <span className="pill pill-gold">In Review</span>}
                 </div>
                 <span className="font-bold text-xl" style={{ color: 'var(--accent-gold)' }}>+{task.points} pts</span>
               </div>
@@ -83,6 +85,8 @@ export const TaskBoard = () => {
               <span className="text-sm text-muted">Deadline: <strong style={{ color: 'var(--text-main)' }}>{task.deadline}</strong></span>
               {task.status === 'pending' ? (
                 <button className="btn-primary" onClick={() => setSelectedTask(task)}>Submit Proof</button>
+              ) : task.status === 'in_review' ? (
+                <button className="btn-secondary" style={{ opacity: 0.7 }} disabled>In Review</button>
               ) : (
                 <button className="btn-secondary" disabled>Done</button>
               )}

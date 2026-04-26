@@ -45,6 +45,7 @@ export const AppProvider = ({ children }) => {
   const [tasksCompleted, setTasksCompleted] = useState(12);
   const [streak, setStreak] = useState(5);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [pendingApprovals, setPendingApprovals] = useState([]);
   const [leaderboard, setLeaderboard] = useState(INITIAL_LEADERBOARD);
   const [badges, setBadges] = useState(BADGES);
   const [feed, setFeed] = useState(INITIAL_FEED);
@@ -81,29 +82,74 @@ export const AppProvider = ({ children }) => {
   };
 
   const submitTask = (taskId, proof) => {
-    // Find task
     const taskIndex = tasks.findIndex(t => t.id === taskId);
     if (taskIndex === -1) return;
     
     const task = tasks[taskIndex];
     
-    // Update task status
+    // Update task status to in_review
     const newTasks = [...tasks];
-    newTasks[taskIndex] = { ...task, status: 'completed' };
+    newTasks[taskIndex] = { ...task, status: 'in_review' };
     setTasks(newTasks);
     
-    // Add points
-    setPoints(prev => prev + task.points);
+    // Add to pending approvals
+    setPendingApprovals(prev => [{
+      id: Date.now(),
+      taskId: task.id,
+      title: task.title,
+      points: task.points,
+      type: task.type,
+      proof: proof,
+      ambassador: 'You',
+      time: 'just now'
+    }, ...prev]);
+
+    addToast(`Proof submitted! Awaiting review.`);
+  };
+
+  const checkBadgeUnlocks = (newPoints) => {
+    let newBadgesUnlocked = false;
+    const updatedBadges = badges.map(b => {
+      if (!b.unlocked && b.id === 'b6' && newPoints >= 5000) {
+        newBadgesUnlocked = true;
+        return { ...b, unlocked: true };
+      }
+      return b;
+    });
+
+    if (newBadgesUnlocked) {
+      setBadges(updatedBadges);
+      addToast('Diamond Badge Unlocked! 💎', 'success');
+      // Add to feed
+      setFeed(prev => [{ id: Date.now(), user: 'You', action: 'unlocked badge', target: 'Diamond', time: 'just now' }, ...prev].slice(0, 10));
+    }
+  };
+
+  const approveTask = (approvalId) => {
+    const approval = pendingApprovals.find(p => p.id === approvalId);
+    if (!approval) return;
+
+    // Remove from pending
+    setPendingApprovals(prev => prev.filter(p => p.id !== approvalId));
+
+    // Update actual task status
+    setTasks(prev => prev.map(t => t.id === approval.taskId ? { ...t, status: 'completed' } : t));
+
+    // Award Points
+    setPoints(prev => {
+      const newPoints = prev + approval.points;
+      checkBadgeUnlocks(newPoints);
+      return newPoints;
+    });
     setTasksCompleted(prev => prev + 1);
-    
-    // Update leaderboard (mock real-time update)
+
+    // Update leaderboard
     setLeaderboard(prev => {
       const newLb = [...prev];
       const meIndex = newLb.findIndex(u => u.id === 'u3');
       if (meIndex !== -1) {
-        newLb[meIndex].points += task.points;
+        newLb[meIndex].points += approval.points;
         newLb.sort((a, b) => b.points - a.points);
-        // Re-assign ranks
         newLb.forEach((u, i) => u.rank = i + 1);
       }
       return newLb;
@@ -111,11 +157,24 @@ export const AppProvider = ({ children }) => {
 
     // Add to feed
     setFeed(prev => [
-      { id: Date.now(), user: 'You', action: 'completed task', target: task.title, time: 'just now' },
+      { id: Date.now(), user: approval.ambassador, action: 'completed task', target: approval.title, time: 'just now' },
       ...prev
-    ].slice(0, 10)); // keep last 10
+    ].slice(0, 10));
 
-    addToast(`Task completed! +${task.points} points`);
+    addToast(`Approved! ${approval.ambassador} earned ${approval.points} pts`);
+  };
+
+  const rejectTask = (approvalId) => {
+    const approval = pendingApprovals.find(p => p.id === approvalId);
+    if (!approval) return;
+
+    // Remove from pending
+    setPendingApprovals(prev => prev.filter(p => p.id !== approvalId));
+
+    // Revert task status so they can try again
+    setTasks(prev => prev.map(t => t.id === approval.taskId ? { ...t, status: 'pending' } : t));
+    
+    addToast(`Task rejected.`);
   };
 
   const addTask = (newTaskData) => {
@@ -177,6 +236,7 @@ export const AppProvider = ({ children }) => {
       role, setRole, isAuthenticated, login, logout,
       points, tasksCompleted, streak,
       tasks, submitTask, addTask,
+      pendingApprovals, approveTask, rejectTask,
       leaderboard, badges, feed,
       toasts
     }}>

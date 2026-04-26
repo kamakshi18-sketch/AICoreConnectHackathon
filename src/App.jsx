@@ -9,6 +9,7 @@ import { TaskBoard } from './pages/Ambassador/TaskBoard';
 import { Leaderboard } from './pages/Ambassador/Leaderboard';
 import { Profile } from './pages/Ambassador/Profile';
 import { OrgDashboard } from './pages/Admin/OrgDashboard';
+import { OrgApprovals } from './pages/Admin/OrgApprovals';
 import { Login } from './pages/Auth/Login';
 
 const AppRoutes = () => {
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         ) : (
           <>
             <Route path="/admin" element={<OrgDashboard />} />
+            <Route path="/admin/approvals" element={<OrgApprovals />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </>
         )}
