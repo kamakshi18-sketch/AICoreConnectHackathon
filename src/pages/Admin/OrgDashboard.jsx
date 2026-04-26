@@ -1,5 +1,4 @@
-import React, { useState, useRef } from 'react';
-import html2canvas from 'html2canvas';
+import React, { useState } from 'react';
 import jsPDF from 'jspdf';
 import { Users, Activity, CheckSquare, Link as LinkIcon, Download, Plus, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -15,26 +14,78 @@ export const OrgDashboard = () => {
   const [newTaskDeadline, setNewTaskDeadline] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
 
-  const dashboardRef = useRef(null);
-
-  const handleExportReport = async () => {
-    if (!dashboardRef.current) return;
-    
+  const handleExportReport = () => {
     try {
-      const canvas = await html2canvas(dashboardRef.current, {
-        backgroundColor: '#0a0a12', // match our dark theme
-        scale: 2, // better resolution
-        useCORS: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      // Title
+      pdf.setFontSize(22);
+      pdf.setTextColor(40, 40, 40);
+      pdf.text('CampusConnect - Organizer Report', 20, 20);
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('CampusConnect_Org_Report.pdf');
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 28);
+      
+      // Key Metrics
+      pdf.setFontSize(16);
+      pdf.setTextColor(40, 40, 40);
+      pdf.text('Key Metrics', 20, 45);
+      
+      pdf.setFontSize(12);
+      pdf.text('Total Ambassadors: 1,248', 25, 55);
+      pdf.text('Active This Week: 842', 25, 65);
+      pdf.text('Tasks Completed: 4,592', 25, 75);
+      pdf.text('Total Referrals: 8,420', 25, 85);
+      
+      // Program ROI
+      pdf.setFontSize(16);
+      pdf.text('Program ROI', 120, 45);
+      
+      pdf.setFontSize(12);
+      pdf.text('New Signups: +3,204', 125, 55);
+      pdf.text('CPA: Rs. 45.50', 125, 65);
+      pdf.text('Drop-off Rate: 12.4%', 125, 75);
+      pdf.text('Acceptance Rate: 94.2%', 125, 85);
+
+      // Engagement by Task Type
+      pdf.setFontSize(16);
+      pdf.text('Engagement by Task Type', 20, 105);
+      pdf.setFontSize(12);
+      let yPos = 115;
+      engagementData.forEach((item) => {
+        pdf.text(`${item.name}: ${item.value}`, 25, yPos);
+        yPos += 10;
+      });
+
+      // Top Colleges
+      pdf.setFontSize(16);
+      pdf.text('Top Colleges by Engagement', 120, 105);
+      pdf.setFontSize(12);
+      let yPosColleges = 115;
+      collegeData.forEach((item) => {
+        pdf.text(`${item.name}: ${item.value}`, 125, yPosColleges);
+        yPosColleges += 10;
+      });
+
+      // Recent Activity Feed
+      pdf.setFontSize(16);
+      yPos = Math.max(yPos, yPosColleges) + 15;
+      pdf.text('Recent Live Activity', 20, yPos);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+      yPos += 10;
+      feed.slice(0, 10).forEach((item) => {
+        if (yPos > 280) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        pdf.text(`- ${item.user} ${item.action} "${item.target}" (${item.time})`, 25, yPos);
+        yPos += 8;
+      });
+
+      pdf.save('CampusConnect_Text_Report.pdf');
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
@@ -74,7 +125,7 @@ export const OrgDashboard = () => {
   ];
 
   return (
-    <div className="container mt-8 mb-8" ref={dashboardRef}>
+    <div className="container mt-8 mb-8">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="mb-2">Org Dashboard</h1>
