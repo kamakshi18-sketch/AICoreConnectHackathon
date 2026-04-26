@@ -59,13 +59,13 @@ export const AppProvider = ({ children }) => {
   };
 
   const login = (id, password, requestedRole) => {
-    if (requestedRole === 'ambassador' && id === 'ambassador' && password === 'password123') {
+    if (requestedRole === 'ambassador' && id === 'ambassador' && password === 'Camp$Ambass26!') {
       setRole('ambassador');
       setIsAuthenticated(true);
       addToast('Logged in successfully!');
       return true;
     }
-    if (requestedRole === 'admin' && id === 'admin' && password === 'admin123') {
+    if (requestedRole === 'admin' && id === 'admin' && password === 'Org$Admin2026!') {
       setRole('admin');
       setIsAuthenticated(true);
       addToast('Logged in as Organizer!');

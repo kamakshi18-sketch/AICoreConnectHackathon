@@ -102,8 +102,8 @@ export const Login = () => {
         
         <div className="text-center mt-6 text-sm text-muted">
           <p>Demo Credentials:</p>
-          <p>Ambassador: <strong>ambassador</strong> / <strong>password123</strong></p>
-          <p>Organizer: <strong>admin</strong> / <strong>admin123</strong></p>
+          <p>Ambassador: <strong>ambassador</strong> / <strong>Camp$Ambass26!</strong></p>
+          <p>Organizer: <strong>admin</strong> / <strong>Org$Admin2026!</strong></p>
         </div>
 
       </div>
